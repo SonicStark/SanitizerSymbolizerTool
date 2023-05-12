@@ -21,5 +21,7 @@ We strip `__sanitizer::SymbolizerTool` and related dependencies from [`compiler-
 and wrapper them as a standalone library. After introducing it, the fuzzer can use **external** **individual** "tools" that can perform symbolication
 by statically analysing target binary (currently, only *llvm-symbolizer*, *atos* and *addr2line* are supported), with a similar style which implemented in sanitizer runtime.
 
+Currently it doesn't support *Windows* platform. Fully migrating compiler-rt across-platform features will be done in future.
+
 *SanitizerSymbolizerTool* is under the Apache License v2.0 with LLVM Exceptions (same as [llvm/llvm-project](https://github.com/llvm/llvm-project)). 
 See `LICENSE` for more details.
