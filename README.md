@@ -18,8 +18,8 @@ i.e., use symbolizer in fuzzer itself when necessary.
 
 *SanitizerSymbolizerTool* helps to implement this. 
 We strip `__sanitizer::SymbolizerTool` and related dependencies from [`compiler-rt`](https://github.com/llvm/llvm-project/tree/main/compiler-rt), 
-and wrapper them as a standalone library. After introducing it, the fuzzer can use external individual "tools" that can perform symbolication 
-(external llvm-symbolizer, libbacktrace, Windows DbgHelp symbolizer, etc.), with a similar style which implemented in sanitizer runtime.
+and wrapper them as a standalone library. After introducing it, the fuzzer can use **external** **individual** "tools" that can perform symbolication
+by statically analysing target binary (currently, only *llvm-symbolizer*, *atos* and *addr2line* are supported), with a similar style which implemented in sanitizer runtime.
 
 *SanitizerSymbolizerTool* is under the Apache License v2.0 with LLVM Exceptions (same as [llvm/llvm-project](https://github.com/llvm/llvm-project)). 
 See `LICENSE` for more details.
