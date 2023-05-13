@@ -218,6 +218,18 @@ RunOnDestruction<Fn> at_scope_exit(Fn fn) {
   return RunOnDestruction<Fn>(fn);
 }
 
+// Char handling
+inline bool IsSpace(int c) {
+  return (c == ' ') || (c == '\n') || (c == '\t') ||
+         (c == '\f') || (c == '\r') || (c == '\v');
+}
+inline bool IsDigit(int c) {
+  return (c >= '0') && (c <= '9');
+}
+inline int ToLower(int c) {
+  return (c >= 'A' && c <= 'Z') ? (c + 'a' - 'A') : c;
+}
+
 } // namespace SANSYMTOOL_NS
 
 #endif // SANSYMTOOL_HEAD_COMMON_H

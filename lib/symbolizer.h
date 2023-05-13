@@ -18,6 +18,7 @@ struct DataInfo {
   char *file;
   uptr  line;
   char *name;
+  uptr  start;
   uptr  size;
 };
 
@@ -108,12 +109,8 @@ private:
   bool use_posix_spawn_;
 };
 
-// Parses one or more two-line strings in the following format:
-//   <function_name>
-//   <file_name>:<line_number>[:<column_number>]
-// Used by LLVMSymbolizer, Addr2LinePool, since all of them 
-// use the same output format.
-void ParseSymbolizeAddrOutputNorm(const char *str, AddrInfo *res);
+// Used by LLVMSymbolizer, Addr2LinePool
+void ParseSymbolizeAddrOutput(const char *str, AddrInfo *res);
 
 } // namespace SANSYMTOOL_NS
 
