@@ -1,12 +1,23 @@
 #include "common.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cstdio>
+
+#if SANITIZER_POSIX
+
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+#else // SANITIZER_POSIX
+#error ONLY SUPPORT POSIX NOW
+#endif // SANITIZER_POSIX
 
 namespace SANSYMTOOL_NS
 {
 
-void NORETURN Die() { exit(SANSYMTOOL_EXITCODE); }
+void NORETURN Die() { std::exit(SANSYMTOOL_EXITCODE); }
 
 void NORETURN CheckFailed(const char *file, int line, const char *cond,
                           u64 v1, u64 v2) {
@@ -22,10 +33,6 @@ void SaySth(const char *file, int line, const char *sth) {
 #if SANITIZER_POSIX
 
 /* POSIX-specific implementation for file I/O */
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 fd_t OpenFile(const char *filename, FileAccessMode mode, error_t *errno_p) {
   int flags;

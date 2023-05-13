@@ -1,8 +1,18 @@
 #include "symbolizer.h"
 
-#include <string.h>
+#include <cstring>
 #include <cstdio>
-#include <stdlib.h>
+#include <cstdlib>
+
+#if SANITIZER_POSIX
+
+#include <unistd.h>
+#include <errno.h>
+#include <sys/wait.h>
+
+#else // SANITIZER_POSIX
+#error ONLY SUPPORT POSIX NOW
+#endif  // SANITIZER_POSIX
 
 namespace SANSYMTOOL_NS
 {
@@ -49,7 +59,7 @@ const char *SymbolizerProcess::SendCommand(const char *command) {
 const char *SymbolizerProcess::SendCommandImpl(const char *command) {
   if (input_fd_ == kInvalidFd || output_fd_ == kInvalidFd)
       return nullptr;
-  if (!WriteToSymbolizer(command, strlen(command)))
+  if (!WriteToSymbolizer(command, std::strlen(command)))
       return nullptr;
   if (!ReadFromSymbolizer())
     return nullptr;
@@ -204,7 +214,7 @@ pid_t StartSubprocess(const char *program, const char *const argv[],
 
     execv(program, const_cast<char **>(&argv[0]));
 
-    exit(1);
+    std::exit(1);
   }
 
   return pid;
@@ -251,12 +261,11 @@ bool SymbolizerProcess::StartSymbolizerSubprocess() {
 
   // Report how symbolizer is being launched for debugging purposes.
 #if SANSYMTOOL_DBG_START_SUBPROCESS
-    // Only use `SAYSTH` for first line
-    SAYSTH("Launching Symbolizer process: \n");
-    for (unsigned index = 0; index < kArgVMax && argv[index]; ++index)
-      std::fprintf(stderr, "%s ", argv[index]);
-    std::fprintf(stderr, "\n");
-  }
+  // Only use `SAYSTH` for first line
+  SAYSTH("Launching Symbolizer process: \n");
+  for (unsigned index = 0; index < kArgVMax && argv[index]; ++index)
+    std::fprintf(stderr, "%s ", argv[index]);
+  std::fprintf(stderr, "\n");
 #endif
 
   if (use_posix_spawn_) {
