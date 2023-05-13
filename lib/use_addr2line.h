@@ -41,6 +41,12 @@ class Addr2LinePool final : public SymbolizerTool {
 
   static const uptr kBufferSize = 64;
   const char *addr2line_path_;
+  // FIXME
+  // If there are many different module names,
+  // we'll get many subprocesses running addr2line.
+  // There should be some garbage collection.
+  // Unless this problem were fixed, only use
+  // addr2line for symbolizing a single program
   std::vector<Addr2LineProcess*> addr2line_pool_;
   static const uptr dummy_address_ =
       FIRST_32_SECOND_64(UINT32_MAX, UINT64_MAX);
