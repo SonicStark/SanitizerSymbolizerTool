@@ -27,6 +27,7 @@ void SaySth(const char *file, int line, const char *sth) {
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 fd_t OpenFile(const char *filename, FileAccessMode mode, error_t *errno_p) {
   int flags;
@@ -70,6 +71,21 @@ bool WriteToFile(fd_t fd, const void *buff, uptr buff_size, uptr *bytes_written,
     if (bytes_written) *bytes_written = res;
     return true;
   }
+}
+
+bool FileExists(const char *filename) {
+  struct stat st;
+  if (stat(filename, &st))
+    return false;
+  // Sanity check: filename is a regular file.
+  return S_ISREG(st.st_mode);
+}
+
+bool DirExists(const char *path) {
+  struct stat st;
+  if (stat(path, &st))
+    return false;
+  return S_ISDIR(st.st_mode);
 }
 
 #else // SANITIZER_POSIX

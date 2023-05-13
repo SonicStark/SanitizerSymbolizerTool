@@ -13,6 +13,9 @@
 #define SANSYMTOOL_EXITCODE 1
 #define SANSYMTOOL_MYNAME "SanitizerSymbolizerTool"
 
+#define SANSYMTOOL_LLVMSYMBOLIZER_DEMANGLE 0
+#define SANSYMTOOL_LLVMSYMBOLIZER_INLINES 1
+
 namespace SANSYMTOOL_NS
 {
 // Platform-specific defs.
@@ -130,6 +133,38 @@ enum ModuleArch {
   kModuleArchHexagon
 };
 
+// When adding a new architecture, don't forget to also update use_llvm_symbolizer.cpp.
+inline const char *ModuleArchToString(ModuleArch arch) {
+  switch (arch) {
+    case kModuleArchUnknown:
+      return "";
+    case kModuleArchI386:
+      return "i386";
+    case kModuleArchX86_64:
+      return "x86_64";
+    case kModuleArchX86_64H:
+      return "x86_64h";
+    case kModuleArchARMV6:
+      return "armv6";
+    case kModuleArchARMV7:
+      return "armv7";
+    case kModuleArchARMV7S:
+      return "armv7s";
+    case kModuleArchARMV7K:
+      return "armv7k";
+    case kModuleArchARM64:
+      return "arm64";
+    case kModuleArchLoongArch64:
+      return "loongarch64";
+    case kModuleArchRISCV64:
+      return "riscv64";
+    case kModuleArchHexagon:
+      return "hexagon";
+  }
+  CHECK(0 && "Invalid module arch");
+  return "";
+}
+
 #if SANITIZER_WINDOWS
 // On Windows, files are HANDLE, which is a synonim of void*.
 // Use void* to avoid including <windows.h> everywhere.
@@ -161,6 +196,9 @@ bool ReadFromFile(fd_t fd, void *buff, uptr buff_size,
                   uptr *bytes_read = nullptr, error_t *error_p = nullptr);
 bool WriteToFile(fd_t fd, const void *buff, uptr buff_size,
                  uptr *bytes_written = nullptr, error_t *error_p = nullptr);
+
+bool FileExists(const char *filename);
+bool DirExists(const char *path);
 
 } // namespace SANSYMTOOL_NS
 
