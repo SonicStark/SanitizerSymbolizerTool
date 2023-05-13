@@ -116,6 +116,6 @@ private:
 // use the same output format.
 void ParseSymbolizeOutputNorm(const char *str, AddrInfo *res);
 
-}
+} // namespace SANSYMTOOL_NS
 
-#endif
+#endif // SANSYMTOOL_HEAD_SYMBOLIZER_H 

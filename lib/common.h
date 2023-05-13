@@ -1,16 +1,54 @@
 #ifndef SANSYMTOOL_HEAD_COMMON_H
 #define SANSYMTOOL_HEAD_COMMON_H
 
+/*
+ Necessary common defs migrated from
+ lib/sanitizer_common/sanitizer_internal_defs.h
+ in
+ https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.3/compiler-rt-16.0.3.src.tar.xz
+*/
+
 #include "sanitizer_platform.h"
 
 #define SANSYMTOOL_EXITCODE 1
 #define SANSYMTOOL_MYNAME "SanitizerSymbolizerTool"
 
-# define LIKELY(x)    __builtin_expect(!!(x), 1)
-# define UNLIKELY(x)  __builtin_expect(!!(x), 0)
-
 namespace SANSYMTOOL_NS
 {
+// Platform-specific defs.
+#if defined(_MSC_VER)
+# define ALWAYS_INLINE __forceinline
+// FIXME(timurrrr): do we need this on Windows?
+# define ALIAS(x)
+# define ALIGNED(x) __declspec(align(x))
+# define FORMAT(f, a)
+# define NOINLINE __declspec(noinline)
+# define NORETURN __declspec(noreturn)
+# define THREADLOCAL   __declspec(thread)
+# define LIKELY(x) (x)
+# define UNLIKELY(x) (x)
+# define PREFETCH(x) /* _mm_prefetch(x, _MM_HINT_NTA) */ (void)0
+# define WARN_UNUSED_RESULT
+#else  // _MSC_VER
+# define ALWAYS_INLINE inline __attribute__((always_inline))
+# define ALIAS(x) __attribute__((alias(x)))
+// Please only use the ALIGNED macro before the type.
+// Using ALIGNED after the variable declaration is not portable!
+# define ALIGNED(x) __attribute__((aligned(x)))
+# define FORMAT(f, a)  __attribute__((format(printf, f, a)))
+# define NOINLINE __attribute__((noinline))
+# define NORETURN  __attribute__((noreturn))
+# define THREADLOCAL   __thread
+# define LIKELY(x)     __builtin_expect(!!(x), 1)
+# define UNLIKELY(x)   __builtin_expect(!!(x), 0)
+# if defined(__i386__) || defined(__x86_64__)
+// __builtin_prefetch(x) generates prefetchnt0 on x86
+#  define PREFETCH(x) __asm__("prefetchnta (%0)" : : "r" (x))
+# else
+#  define PREFETCH(x) __builtin_prefetch(x)
+# endif
+# define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+#endif  // _MSC_VER
 
 #if defined(_WIN64)
 // 64-bit Windows uses LLP64 data model.
@@ -42,23 +80,8 @@ typedef signed short       s16;
 typedef signed int         s32;
 typedef signed long long   s64;
 
-#if SANITIZER_WINDOWS
-// On Windows, files are HANDLE, which is a synonim of void*.
-// Use void* to avoid including <windows.h> everywhere.
-typedef void* fd_t;
-typedef unsigned error_t;
-#else
-typedef int fd_t;
-typedef int error_t;
-#endif
-#if SANITIZER_SOLARIS && !defined(_LP64)
-typedef long pid_t;
-#else
-typedef int pid_t;
-#endif
-
-void Die();
-void CheckFailed(const char *file, int line, const char *cond,
+void NORETURN Die();
+void NORETURN CheckFailed(const char *file, int line, const char *cond,
                         u64 v1, u64 v2);
 
 #define CHECK_IMPL(c1, op, c2) \
@@ -86,6 +109,12 @@ void CheckFailed(const char *file, int line, const char *cond,
 
 #define UNIMPLEMENTED() UNREACHABLE("unimplemented")
 
+void SaySth(const char *file, int line, const char *sth);
+#define SAYSTH(s)                                 \
+  do {                                            \
+    SANSYMTOOL_NS::SaySth(__FILE__, __LINE__, s); \
+  } while (0)
+
 enum ModuleArch {
   kModuleArchUnknown,
   kModuleArchI386,
@@ -101,6 +130,38 @@ enum ModuleArch {
   kModuleArchHexagon
 };
 
-}
-
+#if SANITIZER_WINDOWS
+// On Windows, files are HANDLE, which is a synonim of void*.
+// Use void* to avoid including <windows.h> everywhere.
+typedef void* fd_t;
+typedef unsigned error_t;
+#else
+typedef int fd_t;
+typedef int error_t;
 #endif
+
+#define kInvalidFd ((fd_t)-1)
+#define kStdinFd   ((fd_t) 0)
+#define kStdoutFd  ((fd_t) 1)
+#define kStderrFd  ((fd_t) 2)
+
+enum FileAccessMode {
+  RdOnly,
+  WrOnly,
+  RdWr
+};
+
+// Returns kInvalidFd on error.
+fd_t OpenFile(const char *filename, FileAccessMode mode,
+              error_t *errno_p = nullptr);
+void CloseFile(fd_t);
+
+// Return true on success, false on error.
+bool ReadFromFile(fd_t fd, void *buff, uptr buff_size,
+                  uptr *bytes_read = nullptr, error_t *error_p = nullptr);
+bool WriteToFile(fd_t fd, const void *buff, uptr buff_size,
+                 uptr *bytes_written = nullptr, error_t *error_p = nullptr);
+
+} // namespace SANSYMTOOL_NS
+
+#endif // SANSYMTOOL_HEAD_COMMON_H
