@@ -18,7 +18,6 @@ struct DataInfo {
   char *file;
   uptr  line;
   char *name;
-  uptr  start;
   uptr  size;
 };
 
@@ -114,7 +113,7 @@ private:
 //   <file_name>:<line_number>[:<column_number>]
 // Used by LLVMSymbolizer, Addr2LinePool, since all of them 
 // use the same output format.
-void ParseSymbolizeOutputNorm(const char *str, AddrInfo *res);
+void ParseSymbolizeAddrOutputNorm(const char *str, AddrInfo *res);
 
 } // namespace SANSYMTOOL_NS
 

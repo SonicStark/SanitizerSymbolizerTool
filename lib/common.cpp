@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <cstdio>
 
-//Only standard C calls in this file
-
 namespace SANSYMTOOL_NS
 {
 
@@ -12,13 +10,13 @@ void NORETURN Die() { exit(SANSYMTOOL_EXITCODE); }
 
 void NORETURN CheckFailed(const char *file, int line, const char *cond,
                           u64 v1, u64 v2) {
-    fprintf(stderr, SANSYMTOOL_MYNAME ": CHECK failed: %s:%d \"%s\" (0x%zx, 0x%zx)\n",
+    std::fprintf(stderr, SANSYMTOOL_MYNAME ": CHECK failed: %s:%d \"%s\" (0x%zx, 0x%zx)\n",
             file, line, cond, v1, v2);
     Die();
 }
 
 void SaySth(const char *file, int line, const char *sth) {
-    fprintf(stderr, SANSYMTOOL_MYNAME ": (%s:%d) \"%s\"\n", file, line, sth);
+    std::fprintf(stderr, SANSYMTOOL_MYNAME ": (%s:%d) \"%s\"\n", file, line, sth);
 }
 
 #if SANITIZER_POSIX

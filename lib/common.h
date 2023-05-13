@@ -12,6 +12,7 @@
 
 #define SANSYMTOOL_EXITCODE 1
 #define SANSYMTOOL_MYNAME "SanitizerSymbolizerTool"
+#define SANSYMTOOL_DBG_START_SUBPROCESS 0
 
 #define SANSYMTOOL_LLVMSYMBOLIZER_DEMANGLE 0
 #define SANSYMTOOL_LLVMSYMBOLIZER_INLINES 1
@@ -199,6 +200,23 @@ bool WriteToFile(fd_t fd, const void *buff, uptr buff_size,
 
 bool FileExists(const char *filename);
 bool DirExists(const char *path);
+
+template <typename Fn>
+class RunOnDestruction {
+ public:
+  explicit RunOnDestruction(Fn fn) : fn_(fn) {}
+  ~RunOnDestruction() { fn_(); }
+
+ private:
+  Fn fn_;
+};
+
+// A simple scope guard. Usage:
+// auto cleanup = at_scope_exit([]{ do_cleanup; });
+template <typename Fn>
+RunOnDestruction<Fn> at_scope_exit(Fn fn) {
+  return RunOnDestruction<Fn>(fn);
+}
 
 } // namespace SANSYMTOOL_NS
 
