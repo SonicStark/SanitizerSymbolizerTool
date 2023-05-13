@@ -72,6 +72,8 @@ bool WriteToFile(fd_t fd, const void *buff, uptr buff_size, uptr *bytes_written,
   }
 }
 
+#else // SANITIZER_POSIX
+#error ONLY SUPPORT POSIX NOW
 #endif // SANITIZER_POSIX
 
 } // namespace SANSYMTOOL_NS

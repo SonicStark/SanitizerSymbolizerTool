@@ -105,6 +105,8 @@ bool SymbolizerProcess::WriteToSymbolizer(const char *buffer, uptr length) {
   return true;
 }
 
+#else // SANITIZER_POSIX
+#error ONLY SUPPORT POSIX NOW
 #endif  // SANITIZER_POSIX
 
 } // namespace SANSYMTOOL_NS
