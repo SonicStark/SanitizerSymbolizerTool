@@ -169,6 +169,12 @@ inline const char *ModuleArchToString(ModuleArch arch) {
   return "";
 }
 
+#if SANITIZER_SOLARIS && !defined(_LP64)
+typedef long proc_id_t;
+#else
+typedef int proc_id_t;
+#endif
+
 #if SANITIZER_WINDOWS
 // On Windows, files are HANDLE, which is a synonim of void*.
 // Use void* to avoid including <windows.h> everywhere.
