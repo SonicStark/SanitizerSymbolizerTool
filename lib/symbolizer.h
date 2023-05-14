@@ -68,6 +68,12 @@ public:
   explicit SymbolizerProcess(const char *path, bool use_posix_spawn = false);
   const char *SendCommand(const char *command);
 
+  /* Methods for controlling the subprocess */
+  bool      Restart();
+  proc_id_t GetPID();
+  bool      IsRunning();
+  bool      Kill();
+
 protected:
   ~SymbolizerProcess() {}
 
@@ -91,9 +97,11 @@ private:
     UNIMPLEMENTED();
   }
 
-  bool Restart();
   const char *SendCommandImpl(const char *command);
   bool WriteToSymbolizer(const char *buffer, uptr length);
+
+  //PID of current active symbolizer process, -1 for non
+  proc_id_t active_pid_;
 
   const char *path_;
   fd_t input_fd_;

@@ -21,6 +21,7 @@ SymbolizerProcess::SymbolizerProcess(const char *path, bool use_posix_spawn)
     : path_(path),
       input_fd_(kInvalidFd),
       output_fd_(kInvalidFd),
+      active_pid_(-1),
       times_restarted_(0),
       failed_to_start_(false),
       reported_invalid_path_(false),
@@ -74,6 +75,8 @@ bool SymbolizerProcess::Restart() {
   return StartSymbolizerSubprocess();
 }
 
+proc_id_t SymbolizerProcess::GetPID() { return active_pid_; }
+
 bool SymbolizerProcess::ReadFromSymbolizer() {
   buffer_.clear();
   constexpr uptr max_length = 1024;
@@ -122,6 +125,7 @@ bool SymbolizerProcess::WriteToSymbolizer(const char *buffer, uptr length) {
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 bool CreateTwoHighNumberedPipes(int *infd_, int *outfd_) {
   int *infd = NULL;
@@ -220,6 +224,22 @@ pid_t StartSubprocess(const char *program, const char *const argv[],
   return pid;
 }
 
+// Send SIGKILL to a process whose PID > 3
+bool KillOneProcess(pid_t pid) {
+  if (pid <= 3) { return false; }
+  int kill_status = kill(pid, SIGKILL);
+  if (kill_status < 0) {
+    SAYSTH("Sending SIGKILL failed");
+    std::fprintf(stderr, "(with errno %d)\n", errno);
+    return false;
+  } else {
+    // Wait until it was killed.
+    // May blocked here for a while.
+    waitpid(pid, 0, 0);
+    return true;
+  }
+}
+
 // Checks if specified process is still running
 // Originally declared in sanitizer_file.h.
 bool IsProcessRunning(pid_t pid) {
@@ -299,12 +319,35 @@ bool SymbolizerProcess::StartSymbolizerSubprocess() {
     SAYSTH("WARNING: external symbolizer didn't start up correctly!\n");
     return false;
   }
-
+  
+  active_pid_ = pid;
   return true;
 }
 
 #else // SANITIZER_POSIX
 #error ONLY SUPPORT POSIX NOW
 #endif  // SANITIZER_POSIX
+
+bool SymbolizerProcess::IsRunning() {
+  if (-1 == active_pid_) //no active process
+  { return false; }
+  return IsProcessRunning(active_pid_);
+}
+
+bool SymbolizerProcess::Kill() {
+  if (-1 == active_pid_) //no active process
+  { return false; }
+  if (!KillOneProcess(active_pid_)) {
+    SAYSTH("WARNING: external symbolizer didn't killed correctly!\n");
+    return false;
+  } else {
+    active_pid_ = -1;
+    if (input_fd_ != kInvalidFd)
+      CloseFile(input_fd_);
+    if (output_fd_ != kInvalidFd)
+      CloseFile(output_fd_);
+    return true;
+  }
+}
 
 } // namespace SANSYMTOOL_NS
