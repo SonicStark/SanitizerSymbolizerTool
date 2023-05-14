@@ -7,63 +7,10 @@
 namespace SANSYMTOOL_NS
 {
 
-const char *ExtractToken(const char *str, const char *delims, char **result) {
-  std::size_t prefix_len = std::strcspn(str, delims);
-  *result = (char*)std::malloc(prefix_len + 1);
-  std::memcpy(*result, str, prefix_len);
-  (*result)[prefix_len] = '\0';
-  const char *prefix_end = str + prefix_len;
-  if (*prefix_end != '\0') prefix_end++;
-  return prefix_end;
-}
-
-const char *ExtractInt(const char *str, const char *delims, int *result) {
-  char *buff = nullptr;
-  const char *ret = ExtractToken(str, delims, &buff);
-  if (buff) {
-    *result = (int)std::atoll(buff);
-  }
-  std::free(buff);
-  return ret;
-}
-
-const char *ExtractUptr(const char *str, const char *delims, uptr *result) {
-  char *buff = nullptr;
-  const char *ret = ExtractToken(str, delims, &buff);
-  if (buff) {
-    *result = (uptr)std::atoll(buff);
-  }
-  std::free(buff);
-  return ret;
-}
-
-const char *ExtractSptr(const char *str, const char *delims, sptr *result) {
-  char *buff = nullptr;
-  const char *ret = ExtractToken(str, delims, &buff);
-  if (buff) {
-    *result = (sptr)std::atoll(buff);
-  }
-  std::free(buff);
-  return ret;
-}
-
-const char *ExtractTokenUpToDelimiter(const char *str, const char *delimiter,
-                                      char **result) {
-  const char *found_delimiter = std::strstr(str, delimiter);
-  uptr prefix_len =
-      found_delimiter ? found_delimiter - str : std::strlen(str);
-  *result = (char *)std::malloc(prefix_len + 1);
-  std::memcpy(*result, str, prefix_len);
-  (*result)[prefix_len] = '\0';
-  const char *prefix_end = str + prefix_len;
-  if (*prefix_end != '\0') prefix_end += std::strlen(delimiter);
-  return prefix_end;
-}
-
 // Parse a <file>:<line>[:<column>] buffer. The file path may contain colons on
 // Windows, so extract tokens from the right hand side first. The column info is
 // also optional.
-const char *ParseFileLineInfo(FrameDat *info, const char *str) {
+static const char *ParseFileLineInfo(FrameDat *info, const char *str) {
   char *file_line_info = nullptr;
   str = ExtractToken(str, "\n", &file_line_info);
   CHECK(file_line_info);

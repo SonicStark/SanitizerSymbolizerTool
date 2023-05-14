@@ -117,8 +117,19 @@ private:
   bool use_posix_spawn_;
 };
 
-// Used by LLVMSymbolizer, Addr2LinePool
+// Used by LLVMSymbolizer, Addr2LinePool.
+// Although declared here for common usage,
+// it is defined in use_llvm_symbolizer.cpp
 void ParseSymbolizeAddrOutput(const char *str, AddrInfo *res);
+
+// Parsing helpers, 'str' is searched for delimiter(s) and a string or uptr
+// is extracted. When extracting a string, a newly allocated (using std::malloc)
+// and null-terminated buffer is returned. They return a pointer
+// to the next characted after the found delimiter.
+const char *ExtractToken             (const char *str, const char *delims,    char **result);
+const char *ExtractInt               (const char *str, const char *delims,    int   *result);
+const char *ExtractUptr              (const char *str, const char *delims,    uptr  *result);
+const char *ExtractTokenUpToDelimiter(const char *str, const char *delimiter, char **result);
 
 } // namespace SANSYMTOOL_NS
 
