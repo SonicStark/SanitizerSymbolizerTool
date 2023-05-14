@@ -3,6 +3,7 @@
 #if SANITIZER_POSIX
 
 #include <string.h>
+#include <cstdlib>
 #include <cstdio>
 
 namespace SANSYMTOOL_NS
@@ -11,7 +12,14 @@ namespace SANSYMTOOL_NS
 Addr2LineProcess::Addr2LineProcess(const char *path, const char *module_name) 
   : SymbolizerProcess(path), module_name_(strdup(module_name)) {}
 
-const char *Addr2LineProcess::module_name() const { return module_name_; }
+char *Addr2LineProcess::module_name() const { return module_name_; }
+
+void Addr2LineProcess::module_name_free() {
+  if (module_name_) { 
+    std::free(module_name_);
+    module_name_ = 0;
+  }
+}
 
 void Addr2LineProcess::GetArgV(const char *path_to_binary,
                const char *(&argv)[kArgVMax]) const {
@@ -69,7 +77,7 @@ bool Addr2LineProcess::ReadFromSymbolizer() {
 
 Addr2LinePool::Addr2LinePool(const char *addr2line_path)
     : addr2line_path_(addr2line_path) {
-    addr2line_pool_.reserve(16);
+    addr2line_pool_.reserve(SANSYMTOOL_ADDR2LINE_POOLMAX);
   }
 
 bool Addr2LinePool::SymbolizeData(DataInfo *info) { return false; }
@@ -83,6 +91,17 @@ bool Addr2LinePool::SymbolizeAddr(AddrInfo *info) {
   return false;
 }
 
+void Addr2LinePool::FlushPool() {
+  for (uptr i = 0; i < addr2line_pool_.size(); ++i) {
+    addr2line_pool_[i] -> Kill();
+    addr2line_pool_[i] -> module_name_free();
+    delete addr2line_pool_[i];
+  }
+  addr2line_pool_.clear();
+}
+
+void Addr2LinePool::StopTheWorld() { FlushPool(); }
+
 const char *Addr2LinePool::SendCommand(const char *module_name, uptr module_offset) {
   Addr2LineProcess *addr2line = 0;
   for (uptr i = 0; i < addr2line_pool_.size(); ++i) {
@@ -93,6 +112,8 @@ const char *Addr2LinePool::SendCommand(const char *module_name, uptr module_offs
     }
   }
   if (!addr2line) {
+    if (addr2line_pool_.size() >= SANSYMTOOL_ADDR2LINE_POOLMAX)
+      { FlushPool(); } //if full, flush first.
     addr2line =
         new Addr2LineProcess(addr2line_path_, module_name);
     addr2line_pool_.push_back(addr2line);

@@ -163,6 +163,14 @@ bool LLVMSymbolizer::SymbolizeData(DataInfo *info) {
   return true;
 }
 
+void LLVMSymbolizer::StopTheWorld() {
+  if (symbolizer_process_) {
+    symbolizer_process_->Kill();
+    delete symbolizer_process_;
+    symbolizer_process_ = 0;
+  }
+}
+
 const char *LLVMSymbolizer::FormatAndSendCommand(const char *command_prefix,
                                                  const char *module_name,
                                                  uptr module_offset,

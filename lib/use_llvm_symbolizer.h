@@ -35,6 +35,8 @@ class LLVMSymbolizer final : public SymbolizerTool {
   bool SymbolizeData(DataInfo *info) override;
   bool SymbolizeAddr(AddrInfo *info) override;
 
+  void StopTheWorld() override;
+
  private:
   const char *FormatAndSendCommand(const char *command_prefix,
                                    const char *module_name, uptr module_offset,

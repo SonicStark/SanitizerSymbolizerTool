@@ -55,6 +55,14 @@ public:
   // then we use the following methods to fill the remained fields.
   virtual bool SymbolizeData(DataInfo *info) { UNIMPLEMENTED(); }
   virtual bool SymbolizeAddr(AddrInfo *info) { UNIMPLEMENTED(); }
+  
+  // Destroy all SymbolizerProcess related stuffs.
+  // IT IS IRREVERSIBLE !!!
+  // Used for object destruction. Memory allocated inside
+  // SymbolizerProcess then can only be touched by pointers
+  // inside XXXXInfo struct passed to SymbolizeXXXX.
+  // Managing memory is the user's responsibility.
+  virtual void StopTheWorld() { UNIMPLEMENTED(); }
 
 protected:
   ~SymbolizerTool() {}

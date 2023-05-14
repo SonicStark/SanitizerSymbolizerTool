@@ -15,7 +15,9 @@ class Addr2LineProcess final : public SymbolizerProcess {
  public:
   Addr2LineProcess(const char *path, const char *module_name);
 
-  const char *module_name() const;
+  char *module_name() const;
+  // Free the strdup result with pointer set to 0 in case needed
+  void module_name_free();
 
  private:
   void GetArgV(const char *path_to_binary,
@@ -25,7 +27,7 @@ class Addr2LineProcess final : public SymbolizerProcess {
 
   bool ReadFromSymbolizer() override;
 
-  const char *module_name_;  // Owned, leaked.
+  char *module_name_;  // Owned, leaked. Unless free with module_name_free
   static const char output_terminator_[];
 };
 
@@ -36,18 +38,20 @@ class Addr2LinePool final : public SymbolizerTool {
   bool SymbolizeData(DataInfo *info) override;
   bool SymbolizeAddr(AddrInfo *info) override;
 
+  void StopTheWorld() override;
+
  private:
   const char *SendCommand(const char *module_name, uptr module_offset);
 
   static const uptr kBufferSize = 64;
   const char *addr2line_path_;
-  // FIXME
+
   // If there are many different module names,
   // we'll get many subprocesses running addr2line.
   // There should be some garbage collection.
-  // Unless this problem were fixed, only use
-  // addr2line for symbolizing a single program
+  void FlushPool();
   std::vector<Addr2LineProcess*> addr2line_pool_;
+
   static const uptr dummy_address_ =
       FIRST_32_SECOND_64(UINT32_MAX, UINT64_MAX);
 };
