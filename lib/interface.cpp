@@ -39,9 +39,14 @@ typedef enum
 {
   yes_init_done,
   yes_fini_done,
+  yes_send_done,
+  yes_read_done,
   err_path_not_executable,
   err_path_corrupted,
-  err_unsupported_tool
+  err_unsupported_tool,
+  err_symbolize_failed,
+  err_has_nullptr,
+  err_outofbound
 } RetCode;
 
 static struct SANSYMTOOL_NS::DataInfo * pDataInfoBuf = nullptr;
@@ -133,24 +138,25 @@ void SanSymToolFini(void) {
   }
 }
 
-unsigned long SanSymToolSendAddrDat(char *module, unsigned int offset) {
-  if (!(pSanSymTool && pAddrInfoBuf)) { return 0; }
+int SanSymToolSendAddrDat(char *module, unsigned int offset, unsigned long *n_frames) {
+  if (!(pSanSymTool && pAddrInfoBuf)) { return (int) err_has_nullptr; }
 
   pAddrInfoBuf->module        = module;
   pAddrInfoBuf->module_offset = offset;
   pAddrInfoBuf->module_arch   = SANSYMTOOL_NS::kModuleArchUnknown;
   
   if (pSanSymTool->SymbolizeAddr(pAddrInfoBuf)) {
-    return (unsigned long)(pAddrInfoBuf->frames).size();
+    *n_frames = (pAddrInfoBuf->frames).size();
+    return (int) yes_send_done;
   } else {
-    return 0;
+    return (int) err_symbolize_failed;
   }
 }
 
 int SanSymToolReadAddrDat(unsigned long idx, char **file, char **function, unsigned long *line, unsigned long *column) {
-  if (!(pAddrInfoBuf)) { return -1; }
+  if (!(pAddrInfoBuf)) { return (int) err_has_nullptr; }
 
-  if (idx >= (pAddrInfoBuf->frames).size()) { return -2; }
+  if (idx >= (pAddrInfoBuf->frames).size()) { return (int) err_outofbound; }
 
   struct SANSYMTOOL_NS::FrameDat * pframe = &(pAddrInfoBuf->frames[idx]);
   *file     = pframe->file;
@@ -158,25 +164,25 @@ int SanSymToolReadAddrDat(unsigned long idx, char **file, char **function, unsig
   *line     = pframe->lin;
   *column   = pframe->col;
 
-  return 0;
+  return (int) yes_read_done;
 }
 
 int SanSymToolSendDataDat(char *module, unsigned int offset) {
-  if (!(pSanSymTool && pDataInfoBuf)) { return -1; }
+  if (!(pSanSymTool && pDataInfoBuf)) { return (int) err_has_nullptr; }
 
   pDataInfoBuf->module        = module;
   pDataInfoBuf->module_offset = offset;
   pDataInfoBuf->module_arch   = SANSYMTOOL_NS::kModuleArchUnknown;
 
   if (pSanSymTool->SymbolizeData(pDataInfoBuf)) {
-    return 0;
+    return (int) yes_send_done;
   } else {
-    return -2;
+    return (int) err_symbolize_failed;
   }
 }
 
 int SanSymToolReadDataDat(char **file, char **name, unsigned long *line, unsigned long *start, unsigned long *size) {
-  if (!(pDataInfoBuf)) { return -1; }
+  if (!(pDataInfoBuf)) { return (int) err_has_nullptr; }
 
   *file  = pDataInfoBuf->file;
   *name  = pDataInfoBuf->name;
@@ -184,7 +190,7 @@ int SanSymToolReadDataDat(char **file, char **name, unsigned long *line, unsigne
   *start = pDataInfoBuf->start;
   *size  = pDataInfoBuf->size;
 
-  return 0;
+  return (int) yes_read_done;
 }
 
 
@@ -201,8 +207,8 @@ void SanSymTool_fini(void) {
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE
-unsigned long SanSymTool_addr_send(char *module, unsigned int offset) {
-  return SanSymToolSendAddrDat(module, offset);
+int SanSymTool_addr_send(char *module, unsigned int offset, unsigned long *n_frames) {
+  return SanSymToolSendAddrDat(module, offset, n_frames);
 }
 
 SANITIZER_INTERFACE_ATTRIBUTE

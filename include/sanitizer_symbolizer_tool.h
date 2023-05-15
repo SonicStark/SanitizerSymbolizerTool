@@ -8,7 +8,7 @@ extern "C" {
 int SanSymTool_init(const char * external_symbolizer_path);
 void SanSymTool_fini(void);
 
-unsigned long SanSymTool_addr_send(char *module, unsigned int offset);
+int SanSymTool_addr_send(char *module, unsigned int offset, unsigned long *n_frames);
 int SanSymTool_addr_read(unsigned long idx, char **file, char **function, unsigned long *line, unsigned long *column);
 void SanSymTool_addr_free(void);
 
