@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 
 #if SANITIZER_POSIX
 
@@ -28,6 +29,21 @@ void NORETURN CheckFailed(const char *file, int line, const char *cond,
 
 void SaySth(const char *file, int line, const char *sth) {
     std::fprintf(stderr, SANSYMTOOL_MYNAME ": (%s:%d) \"%s\"\n", file, line, sth);
+}
+
+const char *StripModuleName(const char *module) {
+  if (!module)
+    return nullptr;
+  if (SANITIZER_WINDOWS) {
+    // On Windows, both slash and backslash are possible.
+    // Pick the one that goes last.
+    if (const char *bslash_pos = std::strrchr(module, '\\'))
+      return StripModuleName(bslash_pos + 1);
+  }
+  if (const char *slash_pos = std::strrchr(module, '/')) {
+    return slash_pos + 1;
+  }
+  return module;
 }
 
 #if SANITIZER_POSIX

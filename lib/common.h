@@ -240,6 +240,8 @@ inline int ToLower(int c) {
   return (c >= 'A' && c <= 'Z') ? (c + 'a' - 'A') : c;
 }
 
+const char *StripModuleName(const char *module);
+
 } // namespace SANSYMTOOL_NS
 
 #endif // SANSYMTOOL_HEAD_COMMON_H
