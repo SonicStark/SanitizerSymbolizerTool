@@ -5,12 +5,13 @@
 extern "C" {
 #endif
 
-int SanSymTool_init(void);
-int SanSymTool_fini(void);
+int  SanSymTool_init(const char * external_symbolizer_path);
+void SanSymTool_fini(void);
+
+void SanSymTool_free(int free_target);
 
 int SanSymTool_send(void);
 int SanSymTool_recv(void);
-int SanSymTool_free(void);
 
 #ifdef __cplusplus
 }  // extern "C"
