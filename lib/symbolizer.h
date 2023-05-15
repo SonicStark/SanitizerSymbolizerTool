@@ -29,8 +29,8 @@ struct DataInfo {
 struct FrameDat {
   char *func;
   char *file;
-  int lin;
-  int col;
+  uptr lin;
+  uptr col;
 };
 struct AddrInfo {
   char      *module;
