@@ -167,7 +167,7 @@ void LLVMSymbolizer::StopTheWorld() {
   if (symbolizer_process_) {
     symbolizer_process_->Kill();
     delete symbolizer_process_;
-    symbolizer_process_ = 0;
+    symbolizer_process_ = nullptr;
   }
 }
 

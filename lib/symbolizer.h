@@ -63,9 +63,6 @@ public:
   // inside XXXXInfo struct passed to SymbolizeXXXX.
   // Managing memory is the user's responsibility.
   virtual void StopTheWorld() { UNIMPLEMENTED(); }
-
-protected:
-  ~SymbolizerTool() {}
 };
 
 // SymbolizerProcess encapsulates communication between the tool and
@@ -83,9 +80,7 @@ public:
   bool      Kill();
 
 protected:
-  ~SymbolizerProcess() {}
-
-  /// The maximum number of arguments required to invoke a tool process.
+  // The maximum number of arguments required to invoke a tool process.
   static const unsigned kArgVMax = 16;
 
   // Customizable by subclasses.
