@@ -23,5 +23,7 @@ by statically analysing target binary (currently, only *llvm-symbolizer* and *ad
 
 Currently it doesn't support *Windows* platform. Fully migrating compiler-rt across-platform features will be done in future. But *Fuchsia* will never be supported due to a lack of relevant docs.
 
+One more thing, it's NOT THREAD SAFE.
+
 *SanitizerSymbolizerTool* is under the Apache License v2.0 with LLVM Exceptions (same as [llvm/llvm-project](https://github.com/llvm/llvm-project)). 
 See `LICENSE` for more details.
