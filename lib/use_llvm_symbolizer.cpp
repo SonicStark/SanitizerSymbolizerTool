@@ -70,9 +70,9 @@ void ParseSymbolizeAddrOutput(const char *str, AddrInfo *res) {
 //   <symbol_name>
 //   <start_address> <size>
 //   <filename>:<column>
-// Used by LLVMSymbolizer and InternalSymbolizer. LLVMSymbolizer added support
-// for symbolizing the third line in D123538, but we support the older two-line
-// information as well.
+// Used by LLVMSymbolizer. LLVMSymbolizer added support
+// for symbolizing the third line in D123538, 
+// but we support the older two-line information as well.
 void ParseSymbolizeDataOutput(const char *str, DataInfo *info) {
   str = ExtractToken(str, "\n", &info->name);
   str = ExtractUptr(str, " ", &info->start);
