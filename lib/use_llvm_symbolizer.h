@@ -1,3 +1,15 @@
+//===-- use_llvm_symbolizer.h ---------------------------------------------===//
+//
+// Based on the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// This file declare some classes for llvm-symbolizer.
+// They are designed for cross-platform.
+//===----------------------------------------------------------------------===//
+
 #ifndef SANSYMTOOL_HEAD_USE_LLVM_SYMBOLIZER_H
 #define SANSYMTOOL_HEAD_USE_LLVM_SYMBOLIZER_H
 

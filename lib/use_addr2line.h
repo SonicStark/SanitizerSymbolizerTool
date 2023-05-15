@@ -1,3 +1,14 @@
+//===-- use_addr2line.h ---------------------------------------------------===//
+//
+// Based on the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// This file declare some classes for addr2line. (POSIX only)
+//===----------------------------------------------------------------------===//
+
 #ifndef SANSYMTOOL_HEAD_USE_ADDR2LINE_H
 #define SANSYMTOOL_HEAD_USE_ADDR2LINE_H
 

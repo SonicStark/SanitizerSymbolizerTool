@@ -1,24 +1,75 @@
+//===-- common.h ----------------------------------------------------------===//
+//
+// Based on the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// Necessary basic defs. Most of them are migrated from
+// lib/sanitizer_common/sanitizer_internal_defs.h in
+// https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.3/compiler-rt-16.0.3.src.tar.xz
+// Others can also be found in lib/sanitizer_common/*.h
+//===----------------------------------------------------------------------===//
+
 #ifndef SANSYMTOOL_HEAD_COMMON_H
 #define SANSYMTOOL_HEAD_COMMON_H
 
-/*
- Necessary common defs migrated from
- lib/sanitizer_common/sanitizer_internal_defs.h
- in
- https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.3/compiler-rt-16.0.3.src.tar.xz
-*/
-
 #include "sanitizer_platform.h"
 
+/**
+ * Exit code when calling std::exit
+ * in SANSYMTOOL_NS::Die
+*/
 #define SANSYMTOOL_EXITCODE 1
+/**
+ * Name prefix when calling SANSYMTOOL_NS::CheckFailed
+ * and SANSYMTOOL_NS::SaySth for abort or log
+*/
 #define SANSYMTOOL_MYNAME "SanitizerSymbolizerTool"
+/**
+ * Whether to print log msgs when starting
+ * a subprocess for debugging
+*/
 #define SANSYMTOOL_DBG_START_SUBPROCESS 0
 
+/**
+ * Whether to make llvm-symbolizer print demangled
+ * function names if the names are mangled.
+ * @note e.g. the mangled name _Z3bazv becomes baz(), 
+ * whilst the non-mangled name foz is printed as is.
+*/
 #define SANSYMTOOL_LLVMSYMBOLIZER_DEMANGLE 0
+/**
+ * Whether to make llvm-symbolizer print all
+ * the inlined frames if a source code location 
+ * is in an inlined function.
+*/
 #define SANSYMTOOL_LLVMSYMBOLIZER_INLINES 1
 
+/**
+ * Whether to make addr2line print demangled
+ * function names. Just like what
+ * SANSYMTOOL_LLVMSYMBOLIZER_DEMANGLE
+ * does.
+*/
 #define SANSYMTOOL_ADDR2LINE_DEMANGLE 0
+/**
+ * Whether to make addr2line print 
+ * all the inlined frames. Just like what
+ * SANSYMTOOL_LLVMSYMBOLIZER_INLINES
+ * does.
+*/
 #define SANSYMTOOL_ADDR2LINE_INLINES 1
+/**
+ * This macro indicates max process num.
+ * @note One addr2line can only analyse 
+ * one binary. In case multiple binaries 
+ * are here we manage a process pool.
+ * Once the max num is reached, we kill
+ * all processes in the pool and then
+ * start new ones.
+*/
 #define SANSYMTOOL_ADDR2LINE_POOLMAX 16
 
 namespace SANSYMTOOL_NS
@@ -170,6 +221,9 @@ inline const char *ModuleArchToString(ModuleArch arch) {
   return "";
 }
 
+// Defined for cross-platform process control
+// functions. Can't be defined as pid_t since
+// we don't want to have a conflict with unistd.h
 #if SANITIZER_SOLARIS && !defined(_LP64)
 typedef long proc_id_t;
 #else

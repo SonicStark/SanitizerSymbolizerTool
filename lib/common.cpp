@@ -1,3 +1,15 @@
+//===-- common.cpp --------------------------------------------------------===//
+//
+// Based on the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// This file gives implementation of some basic functions,
+// and some of them are platform specific.
+//===----------------------------------------------------------------------===//
+
 #include "common.h"
 
 #include <cstdlib>

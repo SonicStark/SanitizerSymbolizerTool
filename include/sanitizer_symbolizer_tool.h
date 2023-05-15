@@ -1,3 +1,16 @@
+//===-- sanitizer_symbolizer_tool.h ---------------------------------------===//
+//
+// Based on the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// This file is a part of https://github.com/SonicStark/SanitizerSymbolizerTool.
+//
+// Public interface header.
+//===----------------------------------------------------------------------===//
+
 #ifndef SANSYMTOOL_HEAD_PUBLIC_INTERFACE_H
 #define SANSYMTOOL_HEAD_PUBLIC_INTERFACE_H
 
