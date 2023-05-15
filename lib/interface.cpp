@@ -21,13 +21,10 @@
 #else
 # define SANITIZER_INTERFACE_ATTRIBUTE __declspec(dllexport)
 #endif
-# define SANITIZER_WEAK_ATTRIBUTE
 #elif SANITIZER_GO
 # define SANITIZER_INTERFACE_ATTRIBUTE
-# define SANITIZER_WEAK_ATTRIBUTE
 #else
 # define SANITIZER_INTERFACE_ATTRIBUTE __attribute__((visibility("default")))
-# define SANITIZER_WEAK_ATTRIBUTE  __attribute__((weak))
 #endif
 
 
@@ -36,7 +33,7 @@ typedef enum
   run_nothing,
   run_llvm_symbolizer,
   run_addr2line
-} ToolCode ;
+} ToolCode;
 
 typedef enum
 {
@@ -45,7 +42,7 @@ typedef enum
   err_path_not_executable,
   err_path_corrupted,
   err_unsupported_tool
-} RetCode ;
+} RetCode;
 
 static struct SANSYMTOOL_NS::DataInfo * pDataInfoBuf = nullptr;
 static struct SANSYMTOOL_NS::AddrInfo * pAddrInfoBuf = nullptr;
@@ -90,36 +87,6 @@ int SanSymToolInit(const char * path) {
   return (int) yes_init_done;
 }
 
-
-void SanSymToolFini(void) {
-  RunningThisTool = run_nothing;
-
-  if (pSanSymTool) {
-    pSanSymTool->StopTheWorld();
-    delete pSanSymTool;
-    pSanSymTool = nullptr;
-  }
-
-  if (pDataInfoBuf) {
-    if (pDataInfoBuf->file) { std::free(pDataInfoBuf->file); }
-    if (pDataInfoBuf->name) { std::free(pDataInfoBuf->name); }
-    delete pDataInfoBuf;
-    pDataInfoBuf = nullptr;
-  }
-
-  if (pAddrInfoBuf) {
-    for (size_t i = 0; i < pAddrInfoBuf->frames.size(); ++i) {
-      struct SANSYMTOOL_NS::FrameDat * pframe = &(pAddrInfoBuf->frames[i]);
-      if (pframe->func) { std::free(pframe->func); }
-      if (pframe->file) { std::free(pframe->file); }
-    }
-    pAddrInfoBuf->frames.clear();
-    delete pAddrInfoBuf;
-    pAddrInfoBuf = nullptr;
-  }
-}
-
-
 void SanSymToolFreeDataRes(void) {
   if (pDataInfoBuf) {
     if (pDataInfoBuf->file) { 
@@ -132,6 +99,7 @@ void SanSymToolFreeDataRes(void) {
     }
   }
 }
+
 void SanSymToolFreeAddrRes(void) {
   if (pAddrInfoBuf) {
     for (size_t i = 0; i < pAddrInfoBuf->frames.size(); ++i) {
@@ -142,20 +110,124 @@ void SanSymToolFreeAddrRes(void) {
     pAddrInfoBuf->frames.clear();
   }
 }
-void SanSymToolFreeRes(int free_target) {
-  switch (free_target)
-  {
-  case 1:
-    SanSymToolFreeAddrRes();
-    break;
-  case 2:
-    SanSymToolFreeDataRes();
-    break;
-  default:
-    SanSymToolFreeAddrRes();
-    SanSymToolFreeDataRes();
-    break;
+
+void SanSymToolFini(void) {
+  RunningThisTool = run_nothing;
+
+  if (pSanSymTool) {
+    pSanSymTool->StopTheWorld();
+    delete pSanSymTool;
+    pSanSymTool = nullptr;
+  }
+
+  SanSymToolFreeDataRes();
+  if (pDataInfoBuf) {
+    delete pDataInfoBuf;
+    pDataInfoBuf = nullptr;
+  }
+
+  SanSymToolFreeAddrRes();
+  if (pAddrInfoBuf) {
+    delete pAddrInfoBuf;
+    pAddrInfoBuf = nullptr;
   }
 }
 
+unsigned long SanSymToolSendAddrDat(char *module, unsigned int offset) {
+  if (!(pSanSymTool && pAddrInfoBuf)) { return 0; }
 
+  pAddrInfoBuf->module        = module;
+  pAddrInfoBuf->module_offset = offset;
+  pAddrInfoBuf->module_arch   = SANSYMTOOL_NS::kModuleArchUnknown;
+  
+  if (pSanSymTool->SymbolizeAddr(pAddrInfoBuf)) {
+    return (unsigned long)(pAddrInfoBuf->frames).size();
+  } else {
+    return 0;
+  }
+}
+
+int SanSymToolReadAddrDat(unsigned long idx, char **file, char **function, unsigned long *line, unsigned long *column) {
+  if (!(pAddrInfoBuf)) { return -1; }
+
+  if (idx >= (pAddrInfoBuf->frames).size()) { return -2; }
+
+  struct SANSYMTOOL_NS::FrameDat * pframe = &(pAddrInfoBuf->frames[idx]);
+  *file     = pframe->file;
+  *function = pframe->func;
+  *line     = pframe->lin;
+  *column   = pframe->col;
+
+  return 0;
+}
+
+int SanSymToolSendDataDat(char *module, unsigned int offset) {
+  if (!(pSanSymTool && pDataInfoBuf)) { return -1; }
+
+  pDataInfoBuf->module        = module;
+  pDataInfoBuf->module_offset = offset;
+  pDataInfoBuf->module_arch   = SANSYMTOOL_NS::kModuleArchUnknown;
+
+  if (pSanSymTool->SymbolizeData(pDataInfoBuf)) {
+    return 0;
+  } else {
+    return -2;
+  }
+}
+
+int SanSymToolReadDataDat(char **file, char **name, unsigned long *line, unsigned long *start, unsigned long *size) {
+  if (!(pDataInfoBuf)) { return -1; }
+
+  *file  = pDataInfoBuf->file;
+  *name  = pDataInfoBuf->name;
+  *line  = pDataInfoBuf->line;
+  *start = pDataInfoBuf->start;
+  *size  = pDataInfoBuf->size;
+
+  return 0;
+}
+
+
+extern "C" {
+
+SANITIZER_INTERFACE_ATTRIBUTE
+int SanSymTool_init(const char * external_symbolizer_path) {
+  return SanSymToolInit(external_symbolizer_path);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void SanSymTool_fini(void) {
+  SanSymToolFini();
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+unsigned long SanSymTool_addr_send(char *module, unsigned int offset) {
+  return SanSymToolSendAddrDat(module, offset);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+int SanSymTool_addr_read(unsigned long idx, char **file, char **function, unsigned long *line, unsigned long *column) {
+  return SanSymToolReadAddrDat(idx, file, function, line, column);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void SanSymTool_addr_free(void) {
+  SanSymToolFreeAddrRes();
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+int SanSymTool_data_send(char *module, unsigned int offset) {
+  return SanSymToolSendDataDat(module, offset);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+int SanSymTool_data_read(char **file, char **name, unsigned long *line, unsigned long *start, unsigned long *size) {
+  return SanSymToolReadDataDat(file, name, line, start, size);
+}
+
+SANITIZER_INTERFACE_ATTRIBUTE
+void SanSymTool_data_free(void) {
+  SanSymToolFreeDataRes();
+}
+
+} // extern "C"
