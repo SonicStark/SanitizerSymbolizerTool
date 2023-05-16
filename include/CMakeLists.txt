@@ -1,63 +1,7 @@
-# Migrated from compiler-rt/include/CMakeLists.txt
-# in
-# https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.3/compiler-rt-16.0.3.src.tar.xz
+# Based on compiler-rt/include/CMakeLists.txt in
+# https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/llvm-project-12.0.0.src.tar.xz
 
-if (COMPILER_RT_BUILD_SANITIZERS)
-  set(SANITIZER_HEADERS
-    sanitizer/allocator_interface.h
-    sanitizer/asan_interface.h
-    sanitizer/common_interface_defs.h
-    sanitizer/coverage_interface.h
-    sanitizer/dfsan_interface.h
-    sanitizer/hwasan_interface.h
-    sanitizer/linux_syscall_hooks.h
-    sanitizer/lsan_interface.h
-    sanitizer/msan_interface.h
-    sanitizer/netbsd_syscall_hooks.h
-    sanitizer/scudo_interface.h
-    sanitizer/tsan_interface.h
-    sanitizer/tsan_interface_atomic.h
-    sanitizer/ubsan_interface.h
-    )
-  set(FUZZER_HEADERS
-    fuzzer/FuzzedDataProvider.h
-    )
-endif(COMPILER_RT_BUILD_SANITIZERS)
-
-if (COMPILER_RT_BUILD_MEMPROF)
-  set(MEMPROF_HEADERS
-    sanitizer/memprof_interface.h
-    profile/MemProfData.inc
-    )
-endif(COMPILER_RT_BUILD_MEMPROF)
-
-if (COMPILER_RT_BUILD_XRAY)
-  set(XRAY_HEADERS
-    xray/xray_interface.h
-    xray/xray_log_interface.h
-    xray/xray_records.h
-    )
-endif(COMPILER_RT_BUILD_XRAY)
-
-if (COMPILER_RT_BUILD_ORC)
-  set(ORC_HEADERS
-    orc_rt/c_api.h
-    )
-endif(COMPILER_RT_BUILD_ORC)
-
-if (COMPILER_RT_BUILD_PROFILE)
-  set(PROFILE_HEADERS
-    profile/InstrProfData.inc
-    )
-endif(COMPILER_RT_BUILD_PROFILE)
-
-set(COMPILER_RT_HEADERS
-  ${SANITIZER_HEADERS}
-  ${FUZZER_HEADERS}
-  ${MEMPROF_HEADERS}
-  ${XRAY_HEADERS}
-  ${ORC_HEADERS}
-  ${PROFILE_HEADERS})
+set(COMPILER_RT_HEADERS sanitizer_symbolizer_tool.h)
 
 set(output_dir ${COMPILER_RT_OUTPUT_DIR}/include)
 
@@ -77,38 +21,11 @@ add_custom_target(compiler-rt-headers ALL DEPENDS ${out_files})
 add_dependencies(compiler-rt compiler-rt-headers)
 set_target_properties(compiler-rt-headers PROPERTIES FOLDER "Compiler-RT Misc")
 
-# Install sanitizer headers.
-install(FILES ${SANITIZER_HEADERS}
+# Install the headers.
+install(FILES ${COMPILER_RT_HEADERS}
   COMPONENT compiler-rt-headers
   PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-  DESTINATION ${COMPILER_RT_INSTALL_INCLUDE_DIR}/sanitizer)
-# Install fuzzer headers.
-install(FILES ${FUZZER_HEADERS}
-  COMPONENT compiler-rt-headers
-  PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-  DESTINATION ${COMPILER_RT_INSTALL_INCLUDE_DIR}/fuzzer)
-# Install memprof headers.
-if (COMPILER_RT_BUILD_MEMPROF)
-  install(FILES sanitizer/memprof_interface.h
-    COMPONENT compiler-rt-headers
-    PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-    DESTINATION ${COMPILER_RT_INSTALL_INCLUDE_DIR}/sanitizer)
-endif(COMPILER_RT_BUILD_MEMPROF)
-# Install xray headers.
-install(FILES ${XRAY_HEADERS}
-  COMPONENT compiler-rt-headers
-  PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-  DESTINATION ${COMPILER_RT_INSTALL_INCLUDE_DIR}/xray)
-# Install ORC headers.
-install(FILES ${ORC_HEADERS}
-  COMPONENT compiler-rt-headers
-  PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-  DESTINATION ${COMPILER_RT_INSTALL_INCLUDE_DIR}/orc)
-# Install profile headers.
-install(FILES ${PROFILE_HEADERS}
-  COMPONENT compiler-rt-headers
-  PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-  DESTINATION ${COMPILER_RT_INSTALL_INCLUDE_DIR}/profile)
+  DESTINATION ${COMPILER_RT_INSTALL_PATH}/include)
 
 if (NOT CMAKE_CONFIGURATION_TYPES) # don't add this for IDEs.
   add_custom_target(install-compiler-rt-headers
