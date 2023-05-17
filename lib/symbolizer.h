@@ -24,7 +24,7 @@ namespace SANSYMTOOL_NS
 // For now, DataInfo is used to describe global variable.
 struct DataInfo {
   char      *module;
-  uptr       module_offset;
+  uptr       module_offset; //offset in virtual memory before relocating
   ModuleArch module_arch;
 
   char *file;
@@ -46,7 +46,7 @@ struct FrameDat {
 };
 struct AddrInfo {
   char      *module;
-  uptr       module_offset;
+  uptr       module_offset; //offset in virtual memory before relocating
   ModuleArch module_arch;
 
   std::vector<FrameDat> frames;

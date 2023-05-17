@@ -47,9 +47,7 @@ void SanSymTool_fini(void);
  * as executable code.
  * 
  * @param module The name/path of target binary.
- * @param offset Offset relative to start of the binary.
- * Please remember that we do symbolize the executable code
- * at which is an offset in target binary, not VMA!
+ * @param offset Offset in virtual memory before relocating.
  * @param n_frames If a source code location is in an 
  * inlined function, all the inlined frames will be symbolized.
  * Use n_frames to receive total number of the frames. If the
@@ -114,9 +112,7 @@ void SanSymTool_addr_free(void);
  * and *line* will be 0.
  * 
  * @param module The name/path of target binary.
- * @param offset Offset relative to start of the binary.
- * Please remember that we do symbolize the data
- * at which is an offset in target binary, not VMA!
+ * @param offset Offset in virtual memory before relocating.
  * @return Defined by enum RetCode in lib/interface.cpp
 */
 int SanSymTool_data_send(char *module, unsigned int offset);
