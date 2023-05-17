@@ -61,6 +61,7 @@ public:
   SymbolizerTool *next;
 
   SymbolizerTool() : next(nullptr) {}
+  virtual ~SymbolizerTool() {}
 
   // The |info| parameter is inout. 
   // It is pre-filled with the module base, module offset and arch (if any),
@@ -84,6 +85,8 @@ class SymbolizerProcess {
 public:
   explicit SymbolizerProcess(const char *path, bool use_posix_spawn = false);
   const char *SendCommand(const char *command);
+
+  virtual ~SymbolizerProcess() {}
 
   /* Methods for controlling the subprocess */
   bool      Restart();

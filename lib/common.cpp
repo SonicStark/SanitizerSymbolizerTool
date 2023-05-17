@@ -34,7 +34,7 @@ void NORETURN Die() { std::exit(SANSYMTOOL_EXITCODE); }
 
 void NORETURN CheckFailed(const char *file, int line, const char *cond,
                           u64 v1, u64 v2) {
-    std::fprintf(stderr, SANSYMTOOL_MYNAME ": CHECK failed: %s:%d \"%s\" (0x%zx, 0x%zx)\n",
+    std::fprintf(stderr, SANSYMTOOL_MYNAME " CHECK failed: %s:%d %s (%lld, %lld)\n",
             file, line, cond, v1, v2);
     Die();
 }

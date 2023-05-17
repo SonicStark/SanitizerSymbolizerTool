@@ -31,10 +31,10 @@ namespace SANSYMTOOL_NS
 {
 
 SymbolizerProcess::SymbolizerProcess(const char *path, bool use_posix_spawn)
-    : path_(path),
+    : active_pid_(-1),
+      path_(path),
       input_fd_(kInvalidFd),
       output_fd_(kInvalidFd),
-      active_pid_(-1),
       times_restarted_(0),
       failed_to_start_(false),
       reported_invalid_path_(false),
