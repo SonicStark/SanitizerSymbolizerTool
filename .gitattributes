@@ -1,0 +1,4 @@
+cmake/* linguist-vendored
+
+*.h linguist-language=C++
+include/sanitizer_symbolizer_tool.h linguist-language=C
