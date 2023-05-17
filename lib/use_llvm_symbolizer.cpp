@@ -199,7 +199,7 @@ const char *LLVMSymbolizer::FormatAndSendCommand(const char *command_prefix,
                                     module_offset);
 
   if (size_needed >= static_cast<int>(kBufferSize)) {
-    SAYSTH("WARNING: Command buffer too small");
+    SAYSTH("WARNING: Command buffer too small!\n");
     return nullptr;
   }
 

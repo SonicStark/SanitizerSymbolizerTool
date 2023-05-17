@@ -40,7 +40,7 @@ void NORETURN CheckFailed(const char *file, int line, const char *cond,
 }
 
 void SaySth(const char *file, int line, const char *sth) {
-    std::fprintf(stderr, SANSYMTOOL_MYNAME ": (%s:%d) \"%s\"\n", file, line, sth);
+    std::fprintf(stderr, SANSYMTOOL_MYNAME ": (%s:%d) \"%s\" ", file, line, sth);
 }
 
 const char *StripModuleName(const char *module) {
