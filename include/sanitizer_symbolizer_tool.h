@@ -61,6 +61,14 @@ int SanSymTool_addr_send(char *module, unsigned int offset, unsigned long *n_fra
  * Read symbolizing result of executable code 
  * after the last request sent out.
  * 
+ * @attention If you call it after calling SanSymTool_addr_free,
+ * or after a failed SanSymTool_addr_send call (indicated by 
+ * the RetCode), dirty data will be got. Please don't do this.
+ * 
+ * @warning The two received pointers both can be 0,
+ * if the symbolizer prints "??" in background to 
+ * mark an unknown name. Check the pointers before use!
+ * 
  * @param idx Index of the frame which you want to read.
  * Can't be greater than (n_frames-1).
  * @param file Receive the pointer of an internal allocated
@@ -77,11 +85,8 @@ int SanSymTool_addr_read(unsigned long idx, char **file, char **function, unsign
  * symbolizing executable code.
  * 
  * @attention After calling this, the pointers returned
- * by SanSymTool_addr_read should not be touched anymore.
- * Otherwise it's *Use-After-Free*. 
- * 
- * @attention If you call SanSymTool_addr_read after 
- * calling this, dirty data will be got. Please don't do this.
+ * by SanSymTool_addr_read before should not be touched 
+ * anymore. Otherwise it's *Use-After-Free*. 
  * 
  * @warning This can only free the *latest* allocated memory.
  * The allocation happens when you call SanSymTool_addr_send, and
@@ -105,12 +110,6 @@ void SanSymTool_addr_free(void);
  * @attention Currently only llvm-symbolizer is supported.
  * Calling this for addr2line will always return as fail.
  * 
- * @note What's more, LLVMSymbolizer added support for 
- * symbolizing the third line in https://reviews.llvm.org/D123538 , 
- * but we support the older two-line information as well.
- * If the third line isn't present, *file* will be "\0"
- * and *line* will be 0.
- * 
  * @param module The name/path of target binary.
  * @param offset Offset in virtual memory before relocating.
  * @return Defined by enum RetCode in lib/interface.cpp
@@ -120,6 +119,19 @@ int SanSymTool_data_send(char *module, unsigned int offset);
 /**
  * Read symbolizing result of data
  * after the last request sent out.
+ * 
+ * @attention If you call it after calling SanSymTool_data_free,
+ * or after a failed SanSymTool_data_send call (indicated by 
+ * the RetCode), dirty data will be got. Please don't do this.
+ * 
+ * @note LLVMSymbolizer added support for 
+ * symbolizing the third line in https://reviews.llvm.org/D123538 , 
+ * but we support the older two-line information as well.
+ * If the third line isn't present, *file* will be "\0"
+ * and *line* will be 0.
+ * 
+ * @note *name* will be "??" if the symbolizer does print this,
+ * which is different from what SanSymTool_addr_read does.
  * 
  * @param file Receive the pointer of an internal allocated
  * memory which stores file name.
@@ -137,11 +149,8 @@ int SanSymTool_data_read(char **file, char **name, unsigned long *line, unsigned
  * because of symbolizing data.
  * 
  * @attention After calling this, the pointers returned
- * by SanSymTool_data_read should not be touched anymore.
- * Otherwise it's *Use-After-Free*. 
- * 
- * @attention If you call SanSymTool_data_read after 
- * calling this, dirty data will be got. Please don't do this.
+ * by SanSymTool_data_read before should not be touched
+ * anymore. Otherwise it's *Use-After-Free*. 
  * 
  * @warning This can only free the *latest* allocated memory.
  * The allocation happens when you call SanSymTool_data_send, and
