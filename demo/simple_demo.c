@@ -50,7 +50,7 @@ void data_each(unsigned int head, unsigned int tail) {
         SanSymTool_data_read(&pfile, &pname, &lin, &stt, &siz);
         if (!pfile) { 
             pfile = "FAIL";
-        } else if (*pfile == '\0') {
+        } else if (*pfile == '\n') {
             pfile = "NULL";
         } else {}
         if (!pname) { 

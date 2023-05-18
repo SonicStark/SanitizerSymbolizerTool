@@ -127,7 +127,7 @@ int SanSymTool_data_send(char *module, unsigned int offset);
  * @note LLVMSymbolizer added support for 
  * symbolizing the third line in https://reviews.llvm.org/D123538 , 
  * but we support the older two-line information as well.
- * If the third line isn't present, *file* will be "\0"
+ * If the third line isn't present, *file* will be "\n"
  * and *line* will be 0.
  * 
  * @note *name* will be "??" if the symbolizer does print this,

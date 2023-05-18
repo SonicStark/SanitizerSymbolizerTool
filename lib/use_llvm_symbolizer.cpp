@@ -62,13 +62,35 @@ void ParseSymbolizeAddrOutput(const char *str, AddrInfo *res) {
     }
     struct FrameDat ThisFrame;
     ThisFrame.func = function_name;
+    // ParseFileLineInfo may leave *lin* and *col* untouched.
+    // e.g. addr2line (v2.34) can give
+    //     FuncName
+    //     ??:?
+    // or
+    //     FuncName
+    //     FileName:?
+    // both of which can make the for-loop break before 
+    // setting *lin* and *col*.
+    // So must init them as 0 to avoid reading uninitialized values.
+    ThisFrame.lin = 0;
+    ThisFrame.col = 0;
     str = ParseFileLineInfo(&ThisFrame, str);
 
-    // Functions and filenames can be "??", in which case we write 0
-    // to address info to mark that names are unknown.
+    // Functions and filenames can be "??", in which case 
+    // we write 0 instead to mark that names are unknown.
     if (0 == std::strcmp(ThisFrame.func, "??")) {
       std::free(ThisFrame.func);
       ThisFrame.func = 0;
+    }
+    // In the case of addr2line mentioned above, file name
+    // will be recognized as "??:?" rather than "??", or
+    // "FileName:?" rather than "FileName".
+    // So we have more damn checks!
+    if (ThisFrame.file && 0 == ThisFrame.lin) {
+      char *wtf = ThisFrame.file;
+      uptr sz_ = std::strlen(ThisFrame.file);
+      if ((sz_ > 3) && (*(wtf+sz_-2) == ':') && (*(wtf+sz_-1) == '?'))
+        { *(wtf+sz_-2) = '\0'; }
     }
     if (ThisFrame.file && 0 == std::strcmp(ThisFrame.file, "??")) {
       std::free(ThisFrame.file);
