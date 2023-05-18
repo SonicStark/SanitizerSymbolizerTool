@@ -19,7 +19,7 @@
 
 void code_each(unsigned int head, unsigned int tail) {
     for (unsigned int i=head; i<=tail; ++i) {
-        printf("CODE at damn offset 0x%ux\n", i);
+        printf("CODE at damn offset 0x%x\n", i);
         unsigned long N = 0;
         SanSymTool_addr_send(USE_PROG, i, &N);
         if (N > 0) {
@@ -29,7 +29,8 @@ void code_each(unsigned int head, unsigned int tail) {
                 unsigned long lin;
                 unsigned long col;
                 SanSymTool_addr_read(j, &pfile, &pfunc, &lin, &col);
-                if (!(pfile && pfunc)) { printf("NULL\n"); continue; }
+                if (!pfile) { pfile = "??"; }
+                if (!pfunc) { pfunc = "??"; }
                 printf("%s in %s:%lu:%lu\n", pfunc, pfile, lin, col);
             }
         }
@@ -39,7 +40,7 @@ void code_each(unsigned int head, unsigned int tail) {
 
 void data_each(unsigned int head, unsigned int tail) {
     for (unsigned int i=head; i<=tail; ++i) {
-        printf("DATA at offset 0x%ux\n", i);
+        printf("DATA at damn offset 0x%x\n", i);
         SanSymTool_data_send(USE_PROG, (unsigned int)i);
         char *pfile;
         char *pname;
@@ -47,7 +48,14 @@ void data_each(unsigned int head, unsigned int tail) {
         unsigned long stt;
         unsigned long siz;
         SanSymTool_data_read(&pfile, &pname, &lin, &stt, &siz);
-        if (!(pfile && pname)) { printf("NULL\n"); continue; }
+        if (!pfile) { 
+            pfile = "FAIL";
+        } else if (*pfile == '\0') {
+            pfile = "NULL";
+        } else {}
+        if (!pname) { 
+            pname = "FAIL";
+        } else {}
         printf("%s in %s:%lu, %lu at %lu\n", pname, pfile, lin, siz, stt);
         SanSymTool_data_free();
     }
