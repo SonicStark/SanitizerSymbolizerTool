@@ -65,7 +65,7 @@ typedef enum
 static struct SANSYMTOOL_NS::DataInfo * pDataInfoBuf = nullptr;
 static struct SANSYMTOOL_NS::AddrInfo * pAddrInfoBuf = nullptr;
 
-static struct SANSYMTOOL_NS::SymbolizerTool * pSanSymTool = nullptr;
+static SANSYMTOOL_NS::SymbolizerTool * pSanSymTool = nullptr;
 static ToolCode RunningThisTool = run_nothing;
 
 
