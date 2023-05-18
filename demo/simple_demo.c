@@ -76,12 +76,11 @@ int main() {
     SanSymTool_fini();
 
     printf("===== Using addr2line =====\n");
-    init_st = SanSymTool_init(USE_LLVM);
-    if (init_st != 0) { 
+    init_st = SanSymTool_init(USE_AD2L);
+    if (init_st != 0) {
         printf("Init failed. RetCode=%d\n", init_st);
         exit(0);
     }
-    SanSymTool_init(USE_AD2L);
     code_each(SEC_HEAD_TEXT, SEC_TAIL_TEXT);
     data_each(SEC_HEAD_DATA, SEC_TAIL_DATA);
     data_each(SEC_HEAD_BSS , SEC_TAIL_BSS );
