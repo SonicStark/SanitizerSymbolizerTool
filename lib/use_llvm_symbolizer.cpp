@@ -118,7 +118,7 @@ void ParseSymbolizeDataOutput(const char *str, DataInfo *info) {
 }
 
 LLVMSymbolizerProcess::LLVMSymbolizerProcess(const char *path)
-    : SymbolizerProcess(path, /*use_posix_spawn=*/SANITIZER_APPLE) {}
+    : SymbolizerProcess(path) {}
 
 bool LLVMSymbolizerProcess::ReachedEndOfOutput(const char *buffer, uptr length) const {
   // Empty line marks the end of llvm-symbolizer output.
