@@ -61,7 +61,7 @@ Some common options when calling `cmake` (for more information see [Building LLV
 ### Quick start
 
 Include *sanitizer_symbolizer_tool.h* in your project, use those APIs and link with the library built before when compiling.
-Also your final executable needs to be linked to the standard C++ library, otherwise you will get undefined references.
+If you use the static library, your final executable will need to link with standard C++ library, otherwise you will get undefined references.
 
 For *llvm-symbolizer*, you need a version of it that is not too old - at least from *LLVM version 12.0.1* after some tests. Otherwise `SanSymTool_init` will fail since some command line options are not supported.
 
