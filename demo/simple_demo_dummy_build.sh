@@ -6,7 +6,7 @@ DIR_CUR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )" #https://stackov
 DIR_LIB=`dirname $DIR_CUR`/lib
 DIR_INC=`dirname $DIR_CUR`/include
 
-COMMON_FLAG="-g -O0 -fsanitize=address -I$DIR_INC"
+COMMON_FLAG="-g -O0 -fsanitize=address -fsanitize=undefined -I$DIR_INC"
 
 $CC  $COMMON_FLAG -c $DIR_CUR/simple_demo.c           -o $DIR_CUR/demo-main-tmp.o
 $CXX $COMMON_FLAG -c $DIR_LIB/interface.cpp           -o $DIR_CUR/demo-interface-tmp.o
