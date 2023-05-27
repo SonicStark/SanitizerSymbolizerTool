@@ -63,15 +63,21 @@ const char *StripModuleName(const char *module) {
 /* POSIX-specific implementation for file I/O */
 
 fd_t OpenFile(const char *filename, FileAccessMode mode, error_t *errno_p) {
+  if (!filename) {
+    if (errno_p) *errno_p = EINVAL;
+    return kInvalidFd;
+  }
+
   int flags;
   switch (mode) {
     case RdOnly: flags = O_RDONLY; break;
     case WrOnly: flags = O_WRONLY | O_CREAT | O_TRUNC; break;
     case RdWr: flags = O_RDWR | O_CREAT; break;
   }
+
   fd_t res = open(filename, flags, 0660);
   if (res < 0) {
-    *errno_p = errno;
+    if (errno_p) *errno_p = errno;
     return kInvalidFd;
   } else {
     return res;
@@ -84,9 +90,14 @@ void CloseFile(fd_t fd) {
 
 bool ReadFromFile(fd_t fd, void *buff, uptr buff_size, uptr *bytes_read,
                   error_t *error_p) {
+  if (!buff) {
+    if (error_p) *error_p = EINVAL;
+    return false;
+  }
+
   ssize_t res = read(fd, buff, buff_size);
   if (res < 0) {
-    *error_p = errno;
+    if (error_p) *error_p = errno;
     return false;
   } else {
     if (bytes_read) *bytes_read = res;
@@ -96,9 +107,14 @@ bool ReadFromFile(fd_t fd, void *buff, uptr buff_size, uptr *bytes_read,
 
 bool WriteToFile(fd_t fd, const void *buff, uptr buff_size, uptr *bytes_written,
                  error_t *error_p) {
+  if (!buff) {
+    if (error_p) *error_p = EINVAL;
+    return false;
+  }
+
   ssize_t res = write(fd, buff, buff_size);
   if (res < 0) {
-    *error_p = errno;
+    if (error_p) *error_p = errno;
     return false;
   } else {
     if (bytes_written) *bytes_written = res;
@@ -107,6 +123,8 @@ bool WriteToFile(fd_t fd, const void *buff, uptr buff_size, uptr *bytes_written,
 }
 
 bool FileExists(const char *filename) {
+  if (!filename) return false;
+
   struct stat st;
   if (stat(filename, &st))
     return false;
@@ -115,6 +133,8 @@ bool FileExists(const char *filename) {
 }
 
 bool DirExists(const char *path) {
+  if (!path) return false;
+
   struct stat st;
   if (stat(path, &st))
     return false;
