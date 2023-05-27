@@ -81,6 +81,9 @@ const char *SymbolizerProcess::SendCommandImpl(const char *command) {
 }
 
 bool SymbolizerProcess::Restart() {
+  // Kill anyway to prevent zombies
+  if (IsRunning()) Kill();
+
   if (input_fd_ != kInvalidFd)
     CloseFile(input_fd_);
   if (output_fd_ != kInvalidFd)
@@ -213,7 +216,32 @@ pid_t StartSubprocess(const char *program, const char *const argv[],
   }
 
   if (pid == 0) {
-    // Child subprocess
+    /** CHILD PROCESS **/
+
+    // Let the child act according to their own ideas.
+    // Many programs prefer to ignore SIGPIPE and deal
+    // with EPIPE by themselves, such as AFL++.
+    // But we shouldn't impose this on the child.
+    // One more thing, SanSymTool library itself doesn't
+    // handle SIGPIPE - once child process terminates, 
+    // if the program using SanSymTool ignores or handles
+    // SIGPIPE, a Restart of symbolizer may kick in, 
+    // otherwise the program would die of it.
+    struct sigaction sa;
+    std::memset((char *)&sa, 0, sizeof(sa));
+    sa.sa_handler = SIG_DFL;
+    sigaction(SIGPIPE, &sa, NULL);
+
+    // Isolate child process.
+    // Taking AFL++ as an example, it handles SIGHUP,
+    // SIGINT and SIGTERM, ignores SIGPIPE.
+    // If we use our SanSymTool inside it and a SIGINT
+    // arrives, without setsid the symbolizer child
+    // process will terminate but afl-fuzz still run as-is.
+    // Then if SendCommand is called, EPIPE will be here
+    // and Restart will kick in.
+    setsid();
+
     if (stdin_fd != kInvalidFd) {
       dup2(stdin_fd, STDIN_FILENO);
       close(stdin_fd);
@@ -237,9 +265,20 @@ pid_t StartSubprocess(const char *program, const char *const argv[],
   return pid;
 }
 
-// Send SIGKILL to a process whose PID > 3
-bool KillOneProcess(pid_t pid) {
-  if (pid <= 3) { return false; }
+// Send SIGKILL to a child process and wait for it
+bool KillChildProcess(pid_t pid) {
+  // check its status first
+  pid_t waitpid_status = waitpid(pid, 0, WNOHANG);
+  if (waitpid_status == 0) { return true; }
+  if (waitpid_status <  0) {
+    if (errno == ECHILD) { return false; }
+    else {
+      SAYSTH("Waiting on child process failed");
+      std::fprintf(stderr, "(with errno %d)\n", errno);
+      return false;
+    }
+  }
+
   int kill_status = kill(pid, SIGKILL);
   if (kill_status < 0) {
     SAYSTH("Sending SIGKILL failed");
@@ -350,7 +389,7 @@ bool SymbolizerProcess::IsRunning() {
 bool SymbolizerProcess::Kill() {
   if (-1 == active_pid_) //no active process
   { return false; }
-  if (!KillOneProcess(active_pid_)) {
+  if (!KillChildProcess(active_pid_)) {
     SAYSTH("WARNING: external symbolizer didn't killed correctly!\n");
     return false;
   } else {
